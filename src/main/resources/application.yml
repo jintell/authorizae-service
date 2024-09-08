@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: Authorizer-Service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}/user_service?serverTimezone=UTC&useLegacyDatetimeCode=false
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: off
+
+logging:
+  level:
+    ROOT: ${ROOT_LOG_LEVEL}
+    com.meldtech.platform: ${LOG_LEVEL}
+    org.springframework.security: ${LOG_LEVEL}
+
+
+app:
+  password:
+    strength: 11
+  login:
+    url: ${LOGIN_URL}
+issuer:
+  uri: ${ISSUER_HOST_URL}
+private:
+  key: jadedemo.jks
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  port: 9110
