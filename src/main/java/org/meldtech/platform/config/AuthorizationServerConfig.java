@@ -106,6 +106,8 @@ public class AuthorizationServerConfig {
                         .stream()
                         .map(GrantedAuthority::getAuthority)
                         .toList();
+                Map<String, Object>  result = CustomTokenAttribute.getPublicId(context.getPrincipal().getName(), dataSource);
+                claims.claim("publicId", result.getOrDefault("public_id", "")).build();
                 claims.claim("roles", roles)
                         .build();
             }

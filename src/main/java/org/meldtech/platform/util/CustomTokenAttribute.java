@@ -12,10 +12,20 @@ public class CustomTokenAttribute {
         return loadUserByUsername(credentials, dataSource, passwordEncoder);
     }
 
+    public static Map<String, Object> getPublicId(String credentials, HikariDataSource dataSource)  {
+        return loadUserByUsername(credentials, dataSource);
+    }
+
     private static Map<String, Object> loadUserByUsername(String credentials,
                                                           HikariDataSource dataSource,
                                                           PasswordEncoder passwordEncoder)  {
         return UserPasswordAuthenticator.authenticate(credentials, passwordEncoder, dataSource);
+
+    }
+
+    private static Map<String, Object> loadUserByUsername(String credentials,
+                                                          HikariDataSource dataSource)  {
+        return UserPasswordAuthenticator.authenticate(credentials, dataSource);
 
     }
 }

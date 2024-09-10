@@ -21,6 +21,7 @@ public class UserPasswordAuthenticator {
             "public.user_role ur, public.role r where u.id = ur.user_id " +
             "and r.id = ur.role_id" +
             " and u.username = %s";
+
     public static Map<String, Object> authenticate(String credentials,
                                                    PasswordEncoder passwordEncoder,
                                                    HikariDataSource dataSource)  {
@@ -41,9 +42,26 @@ public class UserPasswordAuthenticator {
         return resultSet;
     }
 
+    public static Map<String, Object> authenticate(String username,
+                                                   HikariDataSource dataSource)  {
+        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+        Map<String, Object> resultSet = new ConcurrentHashMap<>();
+
+        try{
+            resultSet = Objects.requireNonNull(userDetailsManager.getJdbcTemplate())
+                    .queryForMap(String.format(SELECT_USER_NAME, "'"+sanitize(username.trim())+"'"));
+            return resultSet;
+        }catch (Exception ex){ ApiErrorAdvice.handleErrorResponse("Wrong User Credentials"); }
+        return resultSet;
+    }
+
     private static String[] breakUpParts(String credentials) {
         try{ return MessageEncoding.base64Decoding(credentials).split(":"); }
         catch (Exception e){ return new String[]{"sample", "sample"}; }
+    }
+
+    private static String sanitize(String value) {
+        return value.replaceAll("(!|#|$|%|^|&|\\*|\\(|\\)|:|;|'|\"|<|>|\\?|/|,|=|\\|\\{|]|\\[)+", "");
     }
 
 }
