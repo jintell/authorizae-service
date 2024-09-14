@@ -1,9 +1,5 @@
 package org.meldtech.platform.config;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.meldtech.platform.endpoint.helper.CustomLogoutHandler;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -15,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.jackson2.CoreJackson2Module;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -24,7 +19,6 @@ import org.springframework.web.filter.CorsFilter;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.TimeZone;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -86,17 +80,6 @@ public class WebSecurityConfig {
         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
         bean.setOrder(0);
         return bean;
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new CoreJackson2Module());
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);;
-        // ... your other configuration
-        return mapper;
     }
 
 }
