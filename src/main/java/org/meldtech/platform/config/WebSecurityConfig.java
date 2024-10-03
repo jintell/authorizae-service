@@ -2,6 +2,7 @@ package org.meldtech.platform.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.meldtech.platform.endpoint.helper.CustomLogoutHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+    @Value("${app.logout.url}")
+    private String appLogOouUrl;
+
+    @Value("${app.login.url}")
+    private String appLogInUrl;
+
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -38,12 +45,14 @@ public class WebSecurityConfig {
                 .logout(logout -> logout
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
+                        .logoutSuccessUrl(appLogOouUrl+"?logout")
                         .addLogoutHandler(new CustomLogoutHandler("JSESSIONID", "USER"))
                         .permitAll());
         http
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
-                .formLogin(Customizer.withDefaults());
+                .formLogin(Customizer.withDefaults())
+                .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
         http.httpBasic(withDefaults());
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();

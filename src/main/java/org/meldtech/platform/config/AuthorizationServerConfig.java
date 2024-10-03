@@ -70,7 +70,6 @@ public class AuthorizationServerConfig {
                         .authenticationEntryPoint(
                                 new LoginUrlAuthenticationEntryPoint(appLoginUrl))
                 );
-
         return http.build();
     }
 
