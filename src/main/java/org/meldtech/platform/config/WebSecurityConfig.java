@@ -48,12 +48,12 @@ public class WebSecurityConfig {
                         .logoutSuccessUrl(appLogOouUrl+"?logout")
                         .addLogoutHandler(new CustomLogoutHandler("JSESSIONID", "USER"))
                         .permitAll());
+        http.httpBasic(withDefaults());
         http
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
                 .formLogin(Customizer.withDefaults())
                 .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
-        http.httpBasic(withDefaults());
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }

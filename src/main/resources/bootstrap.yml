@@ -6,3 +6,6 @@ spring:
   cloud:
     config:
       uri: http://${CONFIG_SERVER_HOST}:9088
+  security:
+    filter:
+      dispatcher-types: request,async,error,forward,include
