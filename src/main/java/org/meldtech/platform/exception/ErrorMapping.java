@@ -3,6 +3,7 @@ package org.meldtech.platform.exception;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.meldtech.platform.model.service.AppClientConfigService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
@@ -15,11 +16,15 @@ import java.util.Objects;
 @Controller
 public class ErrorMapping implements ErrorController {
 
-    @Value("${authentication.not_found.path}")
-    private String notFoundPath;
+    private final AppClientConfigService appConfigService;
+
+    public ErrorMapping(AppClientConfigService appConfigService) {
+        this.appConfigService = appConfigService;
+    }
 
     @RequestMapping("/error")
     public String handleError(HttpServletRequest request) {
+        String appId = request.getParameter("appId");
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
         Object requestPath = request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
         Object message = request.getAttribute(RequestDispatcher.ERROR_MESSAGE);
@@ -33,7 +38,8 @@ public class ErrorMapping implements ErrorController {
             log.error("Exception type: {}", exceptionType);
 
             if(statusCode == HttpStatus.NOT_FOUND.value()) {
-                return "redirect:"+notFoundPath;
+                return "redirect:"+appConfigService.getResolvedUrl(appId);
+//                return "redirect:"+notFoundPath;
             }
         }
         return "error";
