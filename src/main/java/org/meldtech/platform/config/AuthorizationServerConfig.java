@@ -7,6 +7,8 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.meldtech.platform.model.service.AppClientConfigService;
+import org.meldtech.platform.model.service.CustomLoginUrlEntryPoint;
 import org.meldtech.platform.util.CustomTokenAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -44,9 +46,6 @@ public class AuthorizationServerConfig {
     @Value("${issuer.uri}")
     private String issuerUri;
 
-    @Value("${app.login.url}")
-    private String appLoginUrl;
-
     @Value("${app.password.strength}")
     private int PASSWORD_STRENGTH;
 
@@ -61,14 +60,14 @@ public class AuthorizationServerConfig {
     // Configure with Defaults the OAuth2 Authorization Server Configurer
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      CustomLoginUrlEntryPoint customLoginUrlEntryPoint) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(
-                                new LoginUrlAuthenticationEntryPoint(appLoginUrl))
+                        .authenticationEntryPoint(customLoginUrlEntryPoint)
                 );
         return http.build();
     }

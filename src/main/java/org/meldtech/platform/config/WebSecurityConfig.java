@@ -2,6 +2,7 @@ package org.meldtech.platform.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.meldtech.platform.endpoint.helper.CustomLogoutHandler;
+import org.meldtech.platform.model.service.AppClientConfigService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -28,14 +29,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Value("${app.logout.url}")
-    private String appLogOouUrl;
-
-    @Value("${app.login.url}")
-    private String appLogInUrl;
-
     @Bean
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
+                                                          AppClientConfigService appConfigService) throws Exception {
         http
                 .authorizeHttpRequests(authorize ->
                         authorize.requestMatchers(HttpMethod.OPTIONS).permitAll()
@@ -45,7 +41,12 @@ public class WebSecurityConfig {
                 .logout(logout -> logout
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .logoutSuccessUrl(appLogOouUrl+"?logout")
+//                        .logoutSuccessUrl(appLogOutUrl+"?logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            String appId = request.getParameter("appId"); // or from session/header
+                            String logoutUrl = appConfigService.getLogoutUrl(appId);
+                            response.sendRedirect(logoutUrl + "?logout");
+                        })
                         .addLogoutHandler(new CustomLogoutHandler("JSESSIONID", "USER"))
                         .permitAll());
         http.httpBasic(withDefaults());
@@ -53,7 +54,15 @@ public class WebSecurityConfig {
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
                 .formLogin(Customizer.withDefaults())
-                .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
+//                .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
+                .formLogin(form -> form
+                        .failureHandler((request, response, exception) -> {
+                            System.err.println("Form login failure: " + exception.getMessage());
+                            String appId = request.getParameter("appId"); // or from session/header
+                            String loginUrl = appConfigService.getLoginUrl(appId);
+                            response.sendRedirect(loginUrl + "?error&appId=" + appId);
+                        })
+                );
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
