@@ -3,7 +3,6 @@ package org.meldtech.platform.config;
 import lombok.extern.slf4j.Slf4j;
 import org.meldtech.platform.endpoint.helper.CustomLogoutHandler;
 import org.meldtech.platform.model.service.AppClientConfigService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,10 +56,22 @@ public class WebSecurityConfig {
 //                .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
                 .formLogin(form -> form
                         .failureHandler((request, response, exception) -> {
-                            System.err.println("Form login failure: " + exception.getMessage());
                             String appId = request.getParameter("appId"); // or from session/header
                             String loginUrl = appConfigService.getLoginUrl(appId);
                             response.sendRedirect(loginUrl + "?error&appId=" + appId);
+                        })
+                        .successHandler((request, response, authentication) -> {
+                            String appId = request.getParameter("appId");
+                            if (appId != null && !appId.isEmpty()) {
+                                // Get the success URL for the application
+                                String successUrl = appConfigService.getResolvedUrl(appId);
+                                if (successUrl != null && !successUrl.isEmpty()) {
+                                    response.sendRedirect(successUrl);
+                                    return;
+                                }
+                            }
+                            // Default redirect if no appId or successUrl is found
+                            response.sendRedirect("/");
                         })
                 );
         http.csrf(AbstractHttpConfigurer::disable);
