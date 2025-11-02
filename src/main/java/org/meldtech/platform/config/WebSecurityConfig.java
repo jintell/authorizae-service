@@ -57,7 +57,6 @@ public class WebSecurityConfig {
 //                .formLogin(form -> form.failureUrl(appLogInUrl+"?error"));
                 .formLogin(form -> form
                         .failureHandler((request, response, exception) -> {
-                            System.err.println("Form login failure: " + exception.getMessage());
                             String appId = request.getParameter("appId"); // or from session/header
                             String loginUrl = appConfigService.getLoginUrl(appId);
                             response.sendRedirect(loginUrl + "?error&appId=" + appId);
